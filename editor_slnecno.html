@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mapa SR - Počasie</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+
+  
+</head>
+<body>
+  
+
+<div id="app">
+  <aside id="sidebar">
+    <h2>Nástroje</h2>
+
+    <label for="colorPicker">Vyber farbu:</label>
+    <input type="color" id="colorPicker" value="#00bfff" />
+
+    <button id="drawBtn">✏️ Kresliť</button>
+    <div id="brushControls" class="hidden">
+      <label for="brushSize">Veľkosť štetca</label>
+      <input type="range" id="brushSize" min="1" max="50" value="10" />
+    </div>
+
+    <button id="eraserBtn" title="Guma">🪝 Guma (ikony & farby)</button>
+    <div id="eraserControls" class="hidden">
+      <label for="eraserSize">Veľkosť gumy</label>
+      <input type="range" id="eraserSize" min="1" max="50" value="10" />
+    </div>
+
+    <button id="toggleIcons">Zobraziť/skryť ikony</button>
+
+    <div class="icons" id="iconPanel" style="display: none; max-height: 180px; overflow-y: auto; border: 1px solid #ccc; margin-top: 10px; padding: 10px;">
+      <p>Pridaj ikonu:</p>
+      <div class="icon-with-color">
+        <i class="fa-solid fa-bolt draggable" title="Blesk"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-cloud-rain draggable" title="Dážď"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-wind draggable" title="Vietor"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-snowflake draggable" title="Sneh / Mrznutie"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-temperature-high draggable" title="Teplomer"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-temperature-low draggable" title="Nízka teplota"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-tornado draggable" title="Tornádo"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-cloud-sun draggable" title="Polojasno"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-cloud-showers-heavy draggable" title="Silný dážď"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-smog draggable" title="Hmla"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-water draggable" title="Voda / záplavy"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-fire draggable" title="Požiar"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-umbrella draggable" title="Dážď - dáždnik"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <div class="icon-with-color">
+        <i class="fa-solid fa-sun draggable" title="Slnko"></i>
+        <input type="color" class="icon-color-picker" value="#dddddd" />
+      </div>
+
+      <p class="logo-label">Logo:</p>
+      <div class="logo-container">
+        <img src="logo.png" class="draggable logo-icon" alt="Logo" />
+      </div>
+    </div>
+
+    <button id="addTextBox">Pridať textové pole</button>
+    <div id="textContainer"></div> <!-- sem sa budú pridávať textové polia -->
+
+    <div id="textToolbar">
+      <button id="fontToggleBtn">Font ▼</button>
+      <div id="fontList" style="display:none; max-height:150px; overflow-y:auto; border:1px solid #ccc; margin-top:5px;">
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li class="font-option" data-font="Arial, sans-serif" style="font-family: Arial, sans-serif; padding:5px; cursor:pointer;">Arial</li>
+          <li class="font-option" data-font="'Times New Roman', serif" style="font-family: 'Times New Roman', serif; padding:5px; cursor:pointer;">Times New Roman</li>
+          <li class="font-option" data-font="'Courier New', monospace" style="font-family: 'Courier New', monospace; padding:5px; cursor:pointer;">Courier New</li>
+          <li class="font-option" data-font="Georgia, serif" style="font-family: Georgia, serif; padding:5px; cursor:pointer;">Georgia</li>
+          <li class="font-option" data-font="Verdana, sans-serif" style="font-family: Verdana, sans-serif; padding:5px; cursor:pointer;">Verdana</li>
+          <li class="font-option" data-font="'Comic Sans MS', cursive" style="font-family: 'Comic Sans MS', cursive; padding:5px; cursor:pointer;">Comic Sans MS</li>
+        </ul>
+      </div>
+    </div>
+
+    <button id="exportBtn">💾 Uložiť mapu</button>
+  </aside>
+
+  <main id="mapContainer">
+    <div id="mapArea">
+      <div id="mapCopyrightText">© Severe Weather Slovakia 2012 - 2025</div>
+      <canvas id="drawCanvas"></canvas>
+      <img src="zakladna-mapa-sws.png" alt="Mapa Slovenska" id="mapImage" crossorigin="anonymous">
+      <input
+      id="dateRangeInput"
+      type="text"
+      value="Od 26.6. 2025 17:00 do 27.6. 2025 07:00"
+    >
+
+      <div id="legend">
+        <div class="legend-title">Pravdepodobnosť slnečného počasia:</div>
+        <div id="legend-rows">
+          <div class="legend-row">
+            <input type="color" value="#fce883" class="legend-color" />
+            <span class="color-block"></span>
+            <input type="text" value="Nízka pravdepodobnosť (<33%)" class="legend-text" />
+            <button class="remove-row">&times;</button>
+          </div>
+          <div class="legend-row">
+            <input type="color" value="#f7d358" class="legend-color" />
+            <span class="color-block"></span>
+            <input type="text" value="Stredná pravdepodobnosť (33–67%)" class="legend-text" />
+            <button class="remove-row">&times;</button>
+          </div>
+          <div class="legend-row">  
+            <input type="color" value="#d4ac0d" class="legend-color" />
+            <span class="color-block"></span>
+            <input type="text" value="Vysoká pravdepodobnosť (>67%)" class="legend-text" />
+            <button class="remove-row">&times;</button>
+          </div>
+        </div>
+
+        <button id="addLegendRow">➕ Pridať riadok</button>
+        <small id="legendTime"></small>
+      </div>
+      <div id="editableFooter" contenteditable="true" spellcheck="false">
+        Táto mapa neslúži ako výstraha ani varovanie, slúži ako predpoveď búrok na stránke Severe Weather Slovakia. Oficiálne výstrahy a varovania nájdete na webovej stránke SHMÚ.
+      </div>
+      <div id="dodatok" contenteditable="true" spellcheck="false" style="font-size: 16px; line-height: 1.4;">
+        <h4>Dodatok:</h4>
+        <h5>
+          Nízka pravdepodobnosť slnečného počasia – oblasť, kde sa očakáva prevažne zamračené alebo oblačné počasie s možnosťou slabej oblačnosti.
+        </h5>
+        <h5>
+          Stredná pravdepodobnosť slnečného počasia – oblasť s premenlivým počasím, kde slnko môže byť čiastočne prítomné.
+        </h5>
+        <h5>
+          Vysoká pravdepodobnosť slnečného počasia – oblasť s jasným a prevažne slnečným počasím.
+        </h5>
+      </div>
+    </div>
+    
+  </main>
+  
+</div>
+
+<script src="script.js"></script>
+
+<script>
+  // Tlačidlo na prepínanie viditeľnosti ikon
+  const toggleIconsBtn = document.getElementById('toggleIcons');
+  const iconPanel = document.getElementById('iconPanel');
+
+  toggleIconsBtn.addEventListener('click', () => {
+    if (iconPanel.style.display === 'none') {
+      iconPanel.style.display = 'block';
+      toggleIconsBtn.textContent = 'Skryť ikony';
+    } else {
+      iconPanel.style.display = 'none';
+      toggleIconsBtn.textContent = 'Zobraziť ikony';
+    }
+  });
+
+  // Export mapy (tvoj pôvodný kód)
+  const exportBtn = document.getElementById('exportBtn');
+
+  exportBtn.addEventListener('click', () => {
+    const legendRows = document.querySelectorAll('.legend-row');
+
+    legendRows.forEach(row => {
+      const colorInput = row.querySelector('.legend-color');
+      const colorBlock = row.querySelector('.color-block');
+      const textInput = row.querySelector('.legend-text');
+      const removeBtn = row.querySelector('.remove-row');
+
+      colorBlock.style.backgroundColor = colorInput.value;
+
+      colorInput.style.display = 'none';
+      textInput.style.display = 'none';
+      if (removeBtn) removeBtn.style.display = 'none';
+
+      colorBlock.style.display = 'inline-block';
+    });
+
+    html2canvas(document.querySelector('#mapArea')).then(canvas => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'mapa.png';
+      a.click();
+
+      legendRows.forEach(row => {
+        row.querySelector('.legend-color').style.display = 'inline-block';
+        row.querySelector('.legend-text').style.display = 'inline-block';
+        const removeBtn = row.querySelector('.remove-row');
+        if (removeBtn) removeBtn.style.display = 'inline-block';
+        row.querySelector('.color-block').style.display = 'none';
+      });
+    });
+  });
+</script>
+
+
+</body>
+</html>
